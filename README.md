@@ -3,16 +3,16 @@ Temperature and CPU Speed monitoring tool
 
 ##Installation
 
-make
-sudo make install
-
+make<br/>
+sudo make install<br/>
+<br/>
 ##Uninstall
-sudo make uninstall
+sudo make uninstall<br/>
 
 ##Usage:
 coretempmon [options]
 
--h	help
--s	silent output
--d <milliseconds>	Monitor delay in seconds (default=5000)
--n 	number of loops (default=infinite loop)
+-h	help<br/>
+-s	silent output<br/>
+-d <milliseconds>	Monitor delay in seconds (default=5000)<br/>
+-n 	number of loops (default=infinite loop)<br/>
