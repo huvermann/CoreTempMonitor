@@ -56,7 +56,7 @@ void printHelp() {
 	printf("\n\nUsage:\n coretempmon [options]\n\n");
 	printf("-h            This help\n");
 	printf("-s            Silent output, just data");
-	printf("-d <seconds>  Monitor delay in seconds (default=5)\n");
+	printf("-d <milliseconds>  Monitor delay in seconds (default=5)\n");
 }
 
 bool isRoot() {
