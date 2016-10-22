@@ -1,7 +1,8 @@
 CC=g++
+sourcefolder=CoreTempMonitor/
 PROGNAME=coretempmon
-coretempmon: CoreTempMonitor.cpp
-	$(CC) CoreTempMonitor.cpp -o $(PROGNAME)
+coretempmon: main.cpp
+	$(CC) $(sourcefolder)main.cpp -o $(PROGNAME)
 
 prefix=/usr/local
     
