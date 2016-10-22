@@ -3,3 +3,9 @@
 ################################################################################
 
 /CoreTempMonitor/obj
+*.out
+/CoreTempMonitor/readme
+/CoreTempMonitor/.vs/CoreTempMonitor/v14/.suo
+*.sdf
+*.user
+*.opendb
