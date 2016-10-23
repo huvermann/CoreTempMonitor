@@ -3,17 +3,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <regex>
+#include <vector>
 using namespace std;
+
+struct CpuStatus {
+	string date;
+	double temperature;
+	double frequency;
+	double* cpuLoad;
+};
+
+double toDouble(std::string s) {
+	std::replace(s.begin(), s.end(), ',', '.');
+	return std::atof(s.c_str());
+}
 
 string do_console_command_get_result(char* command)
 {
-	FILE* pipe = popen(command, "r");		//Send the command, popen exits immediately
+	FILE* pipe = popen(command, "r");
 	if (!pipe)
 		return "ERROR";
 
 	char buffer[128];
 	string result = "";
-	while (!feof(pipe))						//Wait for the output resulting from the command
+	while (!feof(pipe))
 	{
 		if (fgets(buffer, 128, pipe) != NULL)
 			result += buffer;
@@ -22,24 +36,23 @@ string do_console_command_get_result(char* command)
 	return(result);
 }
 
-string getTemperature(int zone)
+double getTemperature(int zone)
 {
 	char buffer[100];
 	sprintf(buffer, "cat /sys/class/thermal/thermal_zone%d/temp", zone);
 	string result = do_console_command_get_result(buffer);
-	// Remove last char
 	if (result.size() > 0)  result.resize(result.size() - 1);
-	return (result);
+	return toDouble(result);
 }
 
-string getCpuFrequency(int cpu)
+double getCpuFrequency(int cpu)
 {
 	char buffer[100];
 	sprintf(buffer, "cat /sys/devices/system/cpu/cpu%d/cpufreq/cpuinfo_cur_freq", cpu);
 	string result = do_console_command_get_result(buffer);
 
 	if (result.size() > 0)  result.resize(result.size() - 1);
-	return (result);
+	return toDouble(result);
 }
 
 string currentDateTime() {
@@ -50,6 +63,41 @@ string currentDateTime() {
 	strftime(buf, sizeof(buf), "%X", &tstruct);
 
 	return buf;
+}
+
+vector<string> tokenize(const string& str, char delim)
+{
+	vector<std::string> tokens;
+	std::stringstream mySstream(str);
+	string temp;
+
+	while (getline(mySstream, temp, delim))
+		tokens.push_back(temp);
+
+	return tokens;
+}
+
+
+
+double *getMpStat() {
+	
+	double* result = new double[4];
+	std::regex regex(R"(\d{2}:\d{2}:\d{2}\s+(\d)\s+\d+[.,]\d{2}\s+\d+[.,]\d{2}\s+\d+[.,]\d{2}\s+\d+[.,]\d{2}\s+\d+[.,]\d{2}\s+\d+[.,]\d{2}\s+\d+[.,]\d{2}\s+\d+[.,]\d{2}\s+\d+[.,]\d{2}\s+(\d+[.,]\d{2}))");
+
+	string s = do_console_command_get_result((char*)"mpstat -P ALL");
+	vector<string> lines = tokenize(s, '\n');
+	for (int i = 0; i < lines.size(); ++i)
+	{
+		smatch matches;
+		if (regex_search(lines[i], matches, regex))
+		{
+			int cpunum = stoi(matches[1].str());
+			if (cpunum >= 0 && cpunum < 4) {
+				result[cpunum] = 100 - toDouble(matches[2].str());
+			}
+		}
+	}
+	return result;
 }
 
 void printHelp() {
@@ -69,25 +117,23 @@ void monitoring(unsigned int delay, int loops, bool silent) {
 		printf("Core Temperature Monitor 1.0\n");
 		printf("Scan delay is %d seconds\n", delay);
 		printf("Stop monitoring using [ctrl]-[c]\n");
-		printf("Time Temperature Freq_CPU1 Freq_CPU1 Freq_CPU1 Freq_CPU1\n");
+		printf("Time Temperature Freq_CPU1 CPULoad1  \%CPULoad2 \%CPULoad3 \%CPULoad3\n");
 	}
 
 	bool infinite = (loops == -1);
 	int counter = loops;
+	CpuStatus data;
 
 	while (infinite || counter-- >0)
 	{
-		//sleep(delay);
 		usleep(delay * 1000);
-		string temp0 = getTemperature(0);
-		string temp1 = getTemperature(1);
-		string cpufreq0 = getCpuFrequency(0);
-		string cpufreq1 = getCpuFrequency(1);
-		string cpufreq2 = getCpuFrequency(2);
-		string cpufreq3 = getCpuFrequency(3);
-		string curTime = currentDateTime();
+		data.date = currentDateTime();
+		data.frequency = getCpuFrequency(0);
+		data.temperature = getTemperature(0);
+		data.cpuLoad = getMpStat();
+		printf("%s %0.2f°C %0.0f MHz %0.2f %0.2f %0.2f %0.2f\n", data.date.c_str(), data.temperature, data.frequency, data.cpuLoad[0], data.cpuLoad[1], data.cpuLoad[2], data.cpuLoad[3]);
+		delete[] data.cpuLoad;
 
-		printf("%s %s°C %s°C %s MHz %s MHz %s MHz %s MHz\n", curTime.c_str(), temp0.c_str(), temp1.c_str(), cpufreq0.c_str(), cpufreq1.c_str(), cpufreq2.c_str(), cpufreq3.c_str());
 	}
 
 }
@@ -127,7 +173,6 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	/*if (getuid())*/
 	if (!isRoot())
 	{
 		printf("You must be root!\n");
