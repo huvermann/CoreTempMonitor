@@ -86,7 +86,7 @@ double *getMpStat() {
 
 	string s = do_console_command_get_result((char*)"mpstat -P ALL");
 	vector<string> lines = tokenize(s, '\n');
-	for (int i = 0; i < lines.size(); ++i)
+	for (size_t i = 0; i < lines.size(); ++i)
 	{
 		smatch matches;
 		if (regex_search(lines[i], matches, regex))
