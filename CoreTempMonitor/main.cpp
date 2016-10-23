@@ -117,7 +117,7 @@ void monitoring(unsigned int delay, int loops, bool silent) {
 		printf("Core Temperature Monitor 1.0\n");
 		printf("Scan delay is %d seconds\n", delay);
 		printf("Stop monitoring using [ctrl]-[c]\n");
-		printf("Time Temperature Freq_CPU1 CPULoad1  \%CPULoad2 \%CPULoad3 \%CPULoad3\n");
+		printf("Time Temperature Freq_CPU1 CPULoad1  %%CPULoad2 \%%CPULoad3 \%%CPULoad3\n");
 	}
 
 	bool infinite = (loops == -1);
