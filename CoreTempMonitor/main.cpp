@@ -84,7 +84,7 @@ double *getMpStat() {
 	double* result = new double[4];
 	std::regex regex(R"(\d{2}:\d{2}:\d{2}\s+(\d)\s+\d+[.,]\d{2}\s+\d+[.,]\d{2}\s+\d+[.,]\d{2}\s+\d+[.,]\d{2}\s+\d+[.,]\d{2}\s+\d+[.,]\d{2}\s+\d+[.,]\d{2}\s+\d+[.,]\d{2}\s+\d+[.,]\d{2}\s+(\d+[.,]\d{2}))");
 
-	string s = do_console_command_get_result((char*)"mpstat -P ALL");
+	string s = do_console_command_get_result((char*)"mpstat -P ALL 1 1");
 	vector<string> lines = tokenize(s, '\n');
 	for (size_t i = 0; i < lines.size(); ++i)
 	{
@@ -127,10 +127,11 @@ void monitoring(unsigned int delay, int loops, bool silent) {
 	while (infinite || counter-- >0)
 	{
 		usleep(delay * 1000);
+		data.cpuLoad = getMpStat();
 		data.date = currentDateTime();
 		data.frequency = getCpuFrequency(0);
 		data.temperature = getTemperature(0);
-		data.cpuLoad = getMpStat();
+		
 		printf("%s %0.2f°C %0.0f MHz %0.2f %0.2f %0.2f %0.2f\n", data.date.c_str(), data.temperature, data.frequency, data.cpuLoad[0], data.cpuLoad[1], data.cpuLoad[2], data.cpuLoad[3]);
 		delete[] data.cpuLoad;
 
