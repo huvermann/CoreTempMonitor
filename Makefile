@@ -3,7 +3,7 @@ sourcefolder=CoreTempMonitor/
 PROGNAME=coretempmon
 CFLAGS=-std=c++11 -Wall
 coretempmon: $(sourcefolder)main.cpp
-	$(CC) $(sourcefolder)main.cpp -o $(PROGNAME)
+	$(CC) $(sourcefolder)main.cpp $(CFLAGS) -o $(PROGNAME)
 
 prefix=/usr/local
     
